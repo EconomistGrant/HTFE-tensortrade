@@ -1,0 +1,20 @@
+{
+    "python.pythonPath": "D:\\Anaconda3\\python.exe",
+    "git.ignoreLimitWarning": true,
+    "search.exclude": {
+        "system/": true,
+        "!/system/**/*.ps*": true
+    },
+    "files.exclude": {
+        "**/.DS_Store": false,
+        "**/.git": false,
+        "**/.hg": false,
+        "**/.svn": false,
+        "**/CVS": false
+    },
+    "files.watcherExclude": {
+        "**/.git/objects/**": false,
+        "**/.git/subtree-cache/**": false,
+        "**/node_modules/*/**": false
+    }
+}
