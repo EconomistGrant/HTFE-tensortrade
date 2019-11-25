@@ -61,13 +61,13 @@ class MinMaxNormalizer(FeatureTransformer):
         return output_space
 
     def transform(self, X: pd.DataFrame, input_space: Space) -> pd.DataFrame:
+        #这里只传进来一行吗？
         if self.columns is None:
             self.columns = list(X.columns)
 
         for idx, column in enumerate(self.columns):
             low = input_space.low[idx]
             high = input_space.high[idx]
-
             scale = (self._feature_max - self._feature_min) + self._feature_min
             normalized_column = (X[column] - low) / (high - low + 1E-9) * scale
 

@@ -131,8 +131,8 @@ class FutureExchange(InstrumentExchange):
         raise StopIteration
 
     def current_price(self, symbol: str) -> float:
-        if len(self._data_frame) is 0:
-            self.next_observation()
+        #if len(self._data_frame) is 0:
+            #self.next_observation()
         return float(self.price['close'].values[self._current_step])
 
     def _is_valid_trade(self, trade: Trade) -> bool:

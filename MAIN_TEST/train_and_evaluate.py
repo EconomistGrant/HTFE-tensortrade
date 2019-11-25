@@ -40,10 +40,10 @@ feature_pipeline = FeaturePipeline(steps=[])
 #处理信号,normalize+difference
 
 data = pd.read_csv('TA.csv',index_col = 0)
-data = data.tail(5000).reset_index(drop = True)
+data = data.tail(20).reset_index(drop = True)
 
 exchange = FutureExchange(data, base_instrument = 'RMB', exclude_close = True,
-                          initial_balance = 10000)
+                          initial_balance = 10000, should_pretransform_obs = False)
 
 
 from tensortrade.environments import TradingEnvironment
@@ -73,7 +73,7 @@ environment = TradingEnvironment(exchange=exchange,
 
 strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec)
 
-performance = strategy.run(episodes=300, evaluation=False)
+performance = strategy.run(episodes=10, evaluation=False)
 performance = performance.reset_index()
 trade_table = exchange._trades
 merge = pd.merge(performance, trade_table, left_on = 'index', right_on = 'step', how = 'outer')
