@@ -45,7 +45,7 @@ exchange = FBMExchange(base_instrument='BTC',
                        should_pretransform_obs=True)
 '''
 data = pd.read_csv('RB.csv',index_col = 0)
-data = data[data.index % 30 == 0]
+data = data[data.index % 60 == 0]
 data = data.tail(5000).reset_index(drop = True)
 
 
@@ -63,9 +63,9 @@ network_spec = [
 
 agent_spec = {
     "type": "ppo",
-    "learning_rate": 0.0001,
+    "learning_rate": 0.0003,
     "discount": 1.0,
-    "likelihood_ratio_clipping": 0.2,
+    "likelihood_ratio_clipping": 0.1,
     "estimate_terminal": False,
     "max_episode_timesteps": 200000, 
     "network": network_spec,
@@ -80,7 +80,7 @@ environment = TradingEnvironment(exchange=exchange,
 
 strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec)
 
-performance = strategy.run(episodes=800, evaluation=False)
+performance = strategy.run(episodes=700, evaluation=False)
 performance = performance.reset_index()
 trade_table = exchange._trades
 merge = pd.merge(performance, trade_table, left_on = 'index', right_on = 'step', how = 'outer')
