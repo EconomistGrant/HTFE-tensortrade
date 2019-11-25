@@ -2,6 +2,7 @@ from .action_strategy import ActionStrategy, DTypeString, TradeActionUnion
 from .continuous_action_strategy import ContinuousActionStrategy
 from .discrete_action_strategy import DiscreteActionStrategy
 from .future_action_strategy import FutureActionStrategy
+from .future_position_strategy import FuturePositionStrategy
 from .multi_discrete_action_strategy import MultiDiscreteActionStrategy
 
 

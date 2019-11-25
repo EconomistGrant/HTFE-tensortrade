@@ -51,11 +51,41 @@ class TradeType(Enum):
 class FutureTradeType(Enum):
     """A trade type for future trades. Created by Songhao"""
     
+    SELL = 0
+    HOLD = 1
+    BUY = 2
 
-    HOLD = 0
-    BUY = 1
-    SELL = 2
+    @property
+    def is_hold(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is non-existent (i.e. hold).
+        """
+        return self == FutureTradeType.HOLD
 
+    @property
+    def is_buy(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a buy offer.
+        """
+        return self == FutureTradeType.BUY
+
+    @property
+    def is_sell(self) -> bool:
+        """
+        Returns:
+            Whether the trade type is a sell offer.
+        """
+        return self == FutureTradeType.SELL
+
+class FuturePositionType(Enum):
+
+    SHORT = 0
+    NEUTRAL = 1
+    LONG = 2
+
+    'Does the following necessary?'
     @property
     def is_hold(self) -> bool:
         """

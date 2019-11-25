@@ -35,6 +35,3 @@ class DirectProfitStrategy(RewardStrategy):
             return last_amount * (price - last_price)
         else:
             return last_amount * (price - last_price) - trade.amount * trade.price * 0.0003
-        
-
-    
