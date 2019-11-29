@@ -62,7 +62,7 @@ agent_spec = {
     "type": "ppo",
     "learning_rate": 0.0003,
     "discount": 1.0,
-    "likelihood_ratio_clipping": 0.1,
+    "likelihood_ratio_clipping": 0.2,
     "estimate_terminal": False,
     "max_episode_timesteps": 200000, 
     "network": network_spec,
@@ -75,6 +75,14 @@ environment = TradingEnvironment(exchange=exchange,
                                  reward_strategy=reward_strategy,
                                  feature_pipeline=feature_pipeline)
 
-strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec)
-performance = strategy.run(episodes=1000, evaluation=False)
+strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec, save_best_agent = False)
+#%%Start Over
+'''
+performance = strategy.run(episodes=2, evaluation=False)
+#manually store agent
+strategy.save_agent(directory = 'test/', filename = '01')
+'''
+#%% Restore and Continue 
 
+strategy.restore_agent(directory = 'a/', filename = 'best-model')
+performance = strategy.run(episodes=(strategy._runner.agent.episodes + 20), evaluation=False)
