@@ -74,7 +74,7 @@ environment = TradingEnvironment(exchange=exchange,
 
 strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec)
 
-performance = strategy.run(episodes=1000, evaluation=False)
+performance = strategy.run(episodes=2, evaluation=False)
 performance = performance.reset_index()
 trade_table = exchange._trades
 merge = pd.merge(performance, trade_table, left_on = 'index', right_on = 'step', how = 'outer')
