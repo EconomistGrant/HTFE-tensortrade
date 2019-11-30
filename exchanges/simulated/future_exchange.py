@@ -45,7 +45,7 @@ class FutureExchange(InstrumentExchange):
         self._exclude_close = kwargs.get('exclude_close', False)
         self._active_holds = 0
         self._passive_holds = 0
-        self._episode_trades = pd.DataFrame([],columns = ['trades','active_holds','passive_holds'])
+        #self._episode_trades = pd.DataFrame([],columns = ['trades','active_holds','passive_holds'])
 
         max_allowed_slippage_percent = kwargs.get('max_allowed_slippage_percent', 1.0)
 
@@ -104,8 +104,9 @@ class FutureExchange(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array(self.data_frame.min() / 10000)
-        high = np.array(self.data_frame.max() * 10000)
+        low = np.array([0]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.min() / 10000)
+        high = np.array([np.inf]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.max() * 10000)
+
         return Box(low=low, high=high, dtype='float')
 
     @property
@@ -118,15 +119,28 @@ class FutureExchange(InstrumentExchange):
         return self._current_step < len(self._data_frame) - 1
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+        if self._window_size == 1:
+            data = np.array(self._data_frame).T
+            for step in range(self._current_step, data.shape[1]):
+                self._current_step = step
+                obs = np.zeros(data.shape[0],dtype = 'float16')
+                for i in range(0, data.shape[0]):
+                    obs[i] = data[i][self._current_step]
+                obs = pd.DataFrame(obs).T
+                obs.columns = self._data_frame.columns
+                
+                yield obs
             
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
-
-            if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
-
-            yield obs
+        else:
+            for step in range(self._current_step, len(self._data_frame)):
+                self._current_step = step
+                
+                obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+    
+                if not self._should_pretransform_obs and self._feature_pipeline is not None:
+                    obs = self._feature_pipeline.transform(obs, self.generated_space)
+    
+                yield obs
 
         raise StopIteration
 
@@ -155,6 +169,7 @@ class FutureExchange(InstrumentExchange):
 
     def _update_account(self, trade: Trade):
         if trade.amount > 0:
+            '''
             self._trades = self._trades.append({
                 'step': self._current_step,
                 'symbol': trade.symbol,
@@ -163,7 +178,7 @@ class FutureExchange(InstrumentExchange):
                 'price': trade.price,
                 'volume':trade.price * trade.amount
             }, ignore_index=True)
-
+            '''
         if trade.is_buy:
             self._balance -= trade.amount * (1.0003) * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
@@ -173,14 +188,12 @@ class FutureExchange(InstrumentExchange):
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
 
         self._portfolio[self._base_instrument] = self._balance
-
         
-        self._performance = self._performance.append({
-            'balance': self.balance,
-            'net_worth': self.net_worth,
-            'open_amount': self._portfolio.get(trade.symbol, 0),
-            'price': trade.price
-        }, ignore_index=True)
+        step = self._current_step
+        self._performance[0][step] = self.balance
+        self._performance[1][step] = self.net_worth
+        self._performance[2][step] = self._portfolio.get(trade.symbol, 0)
+        self._performance[3][step] = trade.price
 
     def execute_trade(self, trade: Trade) -> Trade:
         current_price = self.current_price(symbol=trade.symbol)
@@ -214,6 +227,7 @@ class FutureExchange(InstrumentExchange):
 
         self._balance = self._initial_balance
         self._portfolio = {self._base_instrument: self._balance}
+        '''
         if hasattr(self, 'trades'):
             self._episode_trades = self._episode_trades.append({
                 'trades':len(self._trades),
@@ -227,6 +241,14 @@ class FutureExchange(InstrumentExchange):
         
         self._active_holds = 0
         self._passive_holds = 0
-        self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price','volume'])
-        self._performance = pd.DataFrame([], columns=['balance', 'net_worth','open_amount','price'])
+        '''
+        if hasattr(self, '_performance'):
+            performance =(pd.DataFrame(data = self._performance.T, columns = ['balance','net_worth','open_amount','price']))
+            print(performance.tail(5))
+        #self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price','volume'])
+        self._performance = np.zeros([4, len(self._data_frame) - 1])
+        # 1 = balance
+        # 2 = net_worth
+        # 3 = open_amount
+        # 4 = price
         self._current_step = 0
