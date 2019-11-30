@@ -39,7 +39,10 @@ difference = FractionalDifference(difference_order=0.6,
 feature_pipeline = FeaturePipeline(steps=[])
 #处理信号,normalize+difference
 
+
+
 data = pd.read_csv('TA.csv',index_col = 0)
+
 data = data[data.index % 60 == 0]
 data = data.reset_index(drop = True)
 
@@ -72,10 +75,15 @@ environment = TradingEnvironment(exchange=exchange,
                                  reward_strategy=reward_strategy,
                                  feature_pipeline=feature_pipeline)
 
-strategy = TensorforceTradingStrategy(environment=environment, agent_spec=agent_spec)
 
+
+#%%Start Over
+'''
 performance = strategy.run(episodes=2, evaluation=False)
-performance = performance.reset_index()
-trade_table = exchange._trades
-merge = pd.merge(performance, trade_table, left_on = 'index', right_on = 'step', how = 'outer')
+#manually store agent
+strategy.save_agent(directory = 'test/', filename = '01')
+'''
+#%% Restore and Continue 
 
+strategy.restore_agent(directory = 'a/', filename = 'best-model')
+performance = strategy.run(episodes=(strategy._runner.agent.episodes + 20), evaluation=False)
