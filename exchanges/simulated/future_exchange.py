@@ -253,3 +253,4 @@ class FutureExchange(InstrumentExchange):
         # 3 = open_amount
         # 4 = price
         self._current_step = 0
+
