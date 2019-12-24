@@ -1,5 +1,6 @@
 # Written by Songhao Li, Huatai Securities
 # 11/25/2019
+
 import numpy as np
 from typing import Union
 from gym.spaces import Discrete
@@ -39,6 +40,8 @@ class FuturePositionStrategy(ActionStrategy):
         self.instrument_symbol = instrument_symbol
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
+    def reset(self):
+        self.last_position = 0
 
     @property
     def dtype(self) -> DTypeString:
@@ -59,11 +62,24 @@ class FuturePositionStrategy(ActionStrategy):
         1: NEUTRAL
         2: LONG
         """
-        trade_type = FutureTradeType(action)
-        amount = 1
-        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+        position = action - 1 # -1 short, 0 neutral, 1 long
+        change = position - self.last_position
+        #print('previous position：' + str(self.last_position))
+        #print('position after trade:' + str(position))
 
-        price = current_price
+        if change > 0:
+            trade_type = FutureTradeType.BUY
+            #print('buy:')
+        elif change == 0:
+            trade_type = FutureTradeType.HOLD
+            #print('hold:')
+        elif change < 0:
+            trade_type = FutureTradeType.SELL
+            #print('sell:')
 
-
-        return Trade(self.instrument_symbol, trade_type, amount, price)
+        amount = abs(change)
+        #print(amount)
+        price = self._exchange.current_price(symbol=self.instrument_symbol)
+        next_price = self._exchange.next_price(symbol=self.instrument_symbol)
+        self.last_position = position
+        return Trade(self.instrument_symbol, trade_type, amount, price, next_price)

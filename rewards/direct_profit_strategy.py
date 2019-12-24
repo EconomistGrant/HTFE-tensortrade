@@ -1,4 +1,9 @@
 #Written by Songhao Li, HUATAI Securities
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
+
 import pandas as pd
 import numpy as np
 
@@ -17,7 +22,6 @@ class DirectProfitStrategy(RewardStrategy):
         last_price = self._last_price
         price = trade.price
         last_amount = self._open_amount
-        open_money = last_amount * last_price
 
         #reset values
         if trade.is_hold:
@@ -28,7 +32,7 @@ class DirectProfitStrategy(RewardStrategy):
             self._open_amount -= trade.amount
 
         last_price = self._last_price
-        this_price = trade.price
+
         self._last_price = trade.price        
         
         if trade.is_hold:

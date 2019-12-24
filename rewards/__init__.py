@@ -2,6 +2,7 @@ from .reward_strategy import RewardStrategy
 from .simple_profit_strategy import SimpleProfitStrategy
 from .risk_adjusted_return_strategy import RiskAdjustedReturnStrategy
 from .direct_profit_strategy import DirectProfitStrategy
+from .position_reward import PositionReward
 
 _registry = {
     'simple': SimpleProfitStrategy(),

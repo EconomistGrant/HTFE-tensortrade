@@ -13,6 +13,11 @@
 # limitations under the License.
 
 #import talib
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
+
 import numpy as np
 import pandas as pd
 

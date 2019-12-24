@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
-
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
 from enum import Enum
 
 
@@ -55,37 +58,6 @@ class FutureTradeType(Enum):
     HOLD = 1
     BUY = 2
 
-    @property
-    def is_hold(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is non-existent (i.e. hold).
-        """
-        return self == FutureTradeType.HOLD
-
-    @property
-    def is_buy(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is a buy offer.
-        """
-        return self == FutureTradeType.BUY
-
-    @property
-    def is_sell(self) -> bool:
-        """
-        Returns:
-            Whether the trade type is a sell offer.
-        """
-        return self == FutureTradeType.SELL
-
-class FuturePositionType(Enum):
-
-    SHORT = 0
-    NEUTRAL = 1
-    LONG = 2
-
-    'Does the following necessary?'
     @property
     def is_hold(self) -> bool:
         """

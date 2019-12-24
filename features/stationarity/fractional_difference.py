@@ -14,6 +14,10 @@
 #
 # Reference Source: Marcos Lopez De Prado - Advances in Financial Machine Learning
 #                   Chapter 5 (Pg. 82) - Fractionally Differentiated Features
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
 
 import pandas as pd
 import numpy as np

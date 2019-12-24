@@ -12,11 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
 class Trade(object):
     """A trade object for use within trading environments."""
 
-    def __init__(self, symbol: str, trade_type: 'TradeType', amount: float, price: float):
+    def __init__(self, symbol: str, trade_type: 'TradeType', amount: float, price: float, next_price = 0):
         """
         Arguments:
             symbol: The exchange symbol of the instrument in the trade (AAPL, ETH/USD, NQ1!, etc).
@@ -27,11 +30,12 @@ class Trade(object):
         self._symbol = symbol
         self._trade_type = trade_type
         self._amount = amount
+        self._next_price = next_price
         self._price = price
 
     def copy(self) -> 'Trade':
         """Return a copy of the current trade object."""
-        return Trade(symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price)
+        return Trade(symbol=self._symbol, trade_type=self._trade_type, amount=self._amount, price=self._price, next_price = self._next_price)
 
     @property
     def symbol(self) -> str:
@@ -68,6 +72,15 @@ class Trade(object):
     @price.setter
     def price(self, price: float):
         self._price = price
+
+    @property
+    def next_price(self) -> float:
+        """The price paid per instrument in terms of the base instrument (e.g. 10000 represents $10,000.00 if the `base_instrument` is "USD")."""
+        return self._next_price
+
+    @next_price.setter
+    def next_price(self, next_price: float):
+        self._next_price = next_price
 
     @property
     def is_hold(self) -> bool:

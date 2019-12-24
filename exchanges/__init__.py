@@ -5,14 +5,11 @@ from datetime import datetime
 
 from .instrument_exchange import InstrumentExchange
 
-from . import live
 from . import simulated
 
 
 _registry = {
     'simulated': simulated.SimulatedExchange,
-    'fbm': simulated.FBMExchange,
-    'gan': simulated.GANExchange
 }
 
 

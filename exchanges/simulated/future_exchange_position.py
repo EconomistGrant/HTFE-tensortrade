@@ -118,8 +118,8 @@ class FutureExchangePosition(InstrumentExchange):
 
     @property
     def generated_space(self) -> Space:
-        low = np.array(self.data_frame.min() / 10000)
-        high = np.array(self.data_frame.max() * 10000)
+        low = np.array([0]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.min() / 10000)
+        high = np.array([np.inf]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.max() * 10000)
         return Box(low=low, high=high, dtype='float')
 
     @property
@@ -149,41 +149,57 @@ class FutureExchangePosition(InstrumentExchange):
             #self.next_observation()
         return float(self.price['close'].values[self._current_step])
 
-    def next_price(self) -> float:
-        raise NotImplementedError
+    def next_price(self, symbol: str) -> float:
+        if self._current_step < len(self.price) - 1:
+            return float(self.price['close'].values[self._current_step + 1])
+        else:
+            return float(self.price['close'].values[self._current_step])
     
     def _is_valid_trade(self, trade: Trade) -> bool:
         open_amount = self._portfolio.get(trade.symbol, 0)
-        return abs(open_amount * trade.price) < self.net_worth
+        if abs(open_amount * trade.price) < self.net_worth:
+            return True
+        else:
+            print('not valid trade')
+            return False
 
 
     def _update_account(self, trade: Trade):
-        if trade.amount > 0:
-            #程序接近稳定，不需要统计trade。统计花费很多时间
-            '''
-            self._trades = self._trades.append({
-                'step': self._current_step,
-                'symbol': trade.symbol,
-                'type': trade.trade_type,
-                'amount': trade.amount,
-                'price': trade.price,
-                'volume':trade.price * trade.amount
-            }, ignore_index=True)
-            '''
+        #程序接近稳定，不需要统计trade。统计花费很多时间
+        #TODO: 还是用numpy统计吧！
+        '''
+        self._trades = self._trades.append({
+            'step': self._current_step,
+            'symbol': trade.symbol,
+            'type': trade.trade_type,
+            'amount': trade.amount,
+            'price': trade.price,
+            'volume':trade.price * trade.amount
+        }, ignore_index=True)
+        '''
+        #print(self._current_step)
         if trade.is_buy:
             self._balance -= trade.amount * (1.0003) * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
-
+            #print('true buy:' + str(trade.amount))
         elif trade.is_sell:
             self._balance += trade.amount * (0.9997) * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
+            #print('true sell:' + str(trade.amount))
+        elif trade.is_hold:
+            #print('true hold:' + str(trade.amount))
+            pass
+        
+        #print('open_amount:')
+        #print(self._portfolio.get(trade.symbol,0))
+        #print('------')
 
         self._portfolio[self._base_instrument] = self._balance
-
         step = self._current_step
         self._performance[0][step] = self.balance
         self._performance[1][step] = self.net_worth
         self._performance[2][step] = self._portfolio.get(trade.symbol,0)
+        assert self._portfolio.get(trade.symbol,0) <= 1 and self._portfolio.get(trade.symbol,0) >= -1
         self._performance[3][step] = trade.price
 
 
@@ -234,10 +250,12 @@ class FutureExchangePosition(InstrumentExchange):
             pass
         '''
         if hasattr(self, '_performance'):
-            performance = (pd.DataFrame(data = self._performance.T, columms = ['balance','net_worth','open_amount','price']))
+            performance =(pd.DataFrame(data = self._performance.T, columns = ['balance','net_worth','open_amount','price']))
             print(performance.tail(5))
-        self._active_holds = 0
-        self._passive_holds = 0
         #self._trades = pd.DataFrame([], columns=['step', 'symbol', 'type', 'amount', 'price','volume'])
-        self._performance = np.zeros([4,len(self._data_frame)-1])
+        self._performance = np.zeros([4, len(self._data_frame) - 1])
+        # 1 = balance
+        # 2 = net_worth
+        # 3 = open_amount
+        # 4 = price
         self._current_step = 0

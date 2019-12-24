@@ -11,7 +11,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License
-
+import os
+import sys
+ttpath = os.path.abspath('..')
+sys.path.append(ttpath)
 import numpy as np
 
 from tensortrade.slippage import SlippageModel
@@ -55,4 +58,4 @@ class RandomUniformSlippageModel(SlippageModel):
                 fill_price = trade.price
                 fill_amount *= fill_price / trade.price
 
-        return Trade(trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price)
+        return Trade(trade.symbol, trade.trade_type, amount=fill_amount, price=fill_price, next_price = trade.next_price)
