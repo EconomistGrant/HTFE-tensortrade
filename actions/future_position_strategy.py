@@ -1,5 +1,6 @@
 # Written by Songhao Li, Huatai Securities
 # 11/25/2019
+
 import numpy as np
 from typing import Union
 from gym.spaces import Discrete
@@ -36,9 +37,12 @@ class FuturePositionStrategy(ActionStrategy):
             max_allowed_slippage: The maximum amount above the current price the strategy will pay for an instrument. Defaults to 1.0 (i.e. 1%).
         """
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
+        print(n_actions)
         self.instrument_symbol = instrument_symbol
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
+    def reset(self):
+        self.last_position = 0
 
     @property
     def dtype(self) -> DTypeString:
@@ -54,16 +58,25 @@ class FuturePositionStrategy(ActionStrategy):
         """
         The trade type is determined by `action`, when there are only three types of trades:
         hold, buy and sell, implied by FutureTradeType.
-        ACTION is determined, by default, discrete(3), and it should only include (0,1,2) 
-        0: SHORT
-        1: NEUTRAL
-        2: LONG
+        将action转化成position和trade
         """
-        trade_type = FutureTradeType(action)
-        amount = 1
-        current_price = self._exchange.current_price(symbol=self.instrument_symbol)
+        size = (self.action_space.n -1)/2
+        position = (action - size) / size
 
-        price = current_price
+        '''
+        比如说n = 5， 生成01234五种动作，实际上对应的持仓大小应该是-1 -0.5 0 0.5 1
+        '''
+        change = position - self.last_position
 
+        if change > 0:
+            trade_type = FutureTradeType.BUY
+        elif change == 0:
+            trade_type = FutureTradeType.HOLD
+        elif change < 0:
+            trade_type = FutureTradeType.SELL
 
-        return Trade(self.instrument_symbol, trade_type, amount, price)
+        amount = abs(change)
+        price = self._exchange.current_price(symbol=self.instrument_symbol)
+        next_price = self._exchange.next_price(symbol=self.instrument_symbol)
+        self.last_position = position
+        return Trade(self.instrument_symbol, trade_type, amount, price, next_price)
