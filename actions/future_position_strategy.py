@@ -68,12 +68,12 @@ class FuturePositionStrategy(ActionStrategy):
         '''
         change = position - self.last_position
 
-        if change > 0:
+        if change > 0.001:
             trade_type = FutureTradeType.BUY
-        elif change == 0:
-            trade_type = FutureTradeType.HOLD
-        elif change < 0:
+        elif change < -0.001:
             trade_type = FutureTradeType.SELL
+        else:
+            trade_type = FutureTradeType.HOLD
 
         amount = abs(change)
         price = self._exchange.current_price(symbol=self.instrument_symbol)

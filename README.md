@@ -11,17 +11,28 @@ Modify the tensortrade/tensorforce to meet the needs of future market ananlysis.
 
 The original tensortrade program is aquired 10/29/2019 and may not be updated to the latest version with notadamking's master branch.
 
+
 # Modification record:
 
+Date 11/24/2019
+Position_evaluate.py
+Choose positions as actions. Check this file for more info.
+-------
+Date 11/15/2019
+tensortrade_clean
+Run programs directly in this directory!
+------
+Date 11/09/2019
+0.1 amount per trad
+------
 actions/future_action_strategy.py
 
 Date: 11/2/2019
 
+------
 Ensure the program can generate buy/sell/hold actions.
-<<<<<<< HEAD
 
 Date 11/22 
 
-0.1 amount per trade
-=======
->>>>>>> 6337089020a7f4ea0b35092f1e97ec7e7361ab0a
+
+
