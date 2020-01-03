@@ -20,10 +20,8 @@ class FutureActionStrategy(ActionStrategy):
         """
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
         #最后生成action数值的地方
-        assert n_actions >= 3
         self.instrument_symbol = instrument_symbol
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
-
 
 
     @property
@@ -42,15 +40,8 @@ class FutureActionStrategy(ActionStrategy):
         hold, buy and sell, implied by FutureTradeType.
         ACTION is determined, by default, discrete(3), and it should only include (0,1,2) 
         """
-        size = (self.action_space.n -1)/2
-        trade = (action - size)/size
-        if trade > 0.001:
-            trade_type = FutureTradeType.BUY
-        elif trade < -0.001:
-            trade_type = FutureTradeType.SELL
-        else:
-            trade_type = FutureTradeType.HOLD     
-        amount = trade
+        trade_type = FutureTradeType(action)
+        amount = 0.1
         current_price = self._exchange.current_price(symbol=self.instrument_symbol)
 
         price = current_price
