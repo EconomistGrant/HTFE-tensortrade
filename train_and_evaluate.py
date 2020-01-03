@@ -3,8 +3,12 @@ import sys
 import warnings
 import numpy
 import pandas as pd
+<<<<<<< HEAD
+
+=======
 sys.path.append(os.path.abspath('..'))
 sys.path.append(os.path.abspath('.'))
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7
 def warn(*args, **kwargs):
     pass
 
@@ -20,6 +24,10 @@ assert tensorforce.__version__ == '0.5.2'
 #%% Actions & Rewards
 from strategies import TensorforceTradingStrategy
 from rewards import DirectProfitStrategy
+<<<<<<< HEAD
+
+=======
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7
 from actions import FutureActionStrategy
 reward_strategy = DirectProfitStrategy()
 action_strategy = FutureActionStrategy()
@@ -36,7 +44,20 @@ feature_pipeline = FeaturePipeline(steps=[])
 
 #%% Data Input
 from exchanges.simulated.future_exchange import FutureExchange
+<<<<<<< HEAD
 data = pd.read_csv('Data/TA.csv',index_col = 0)
+=======
+<<<<<<< HEAD
+data = pd.read_csv('Data/TA.csv',index_col = 0)
+
+data = data[data.index % 30 == 0]
+data = data.reset_index(drop = True)
+data = data.tail(50)
+
+exchange = FutureExchange(data, base_instrument = 'RMB', exclude_close = True,
+=======
+data = pd.read_csv('Data/TAfun.csv',index_col = 0)
+>>>>>>> 08330b7897a3ef2bf6720a6216fb2bdae1032e6c
 
 data = data[data.index % 60 == 0]
 data = data.reset_index(drop = True)
@@ -53,6 +74,7 @@ exchange_in_sample = FutureExchange(in_sample, base_instrument = 'RMB', exclude_
                           initial_balance = 10000, should_pretransform_obs = False)
 
 exchange_out_sample = FutureExchange(out_sample, base_instrument = 'RMB', exclude_close = True,
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7
                           initial_balance = 10000, should_pretransform_obs = False)
 
 #%%Environment Setup
@@ -72,6 +94,13 @@ agent_spec = {
     "estimate_terminal": False,
     "max_episode_timesteps": 200000, 
     "network": network_spec,
+<<<<<<< HEAD
+    "batch_size": 5,
+    "update_frequency":5
+}
+
+environment = TradingEnvironment(exchange=exchange,
+=======
     "batch_size": 10,
     "update_frequency":10,
     "critic_network":network_spec,
@@ -85,10 +114,17 @@ environment = TradingEnvironment(exchange=exchange,
                                  feature_pipeline=feature_pipeline)
 
 environment_in_sample = TradingEnvironment(exchange=exchange_in_sample,
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7
                                  action_strategy=action_strategy,
                                  reward_strategy=reward_strategy,
                                  feature_pipeline=feature_pipeline)
 
+<<<<<<< HEAD
+strategy = TensorforceTradingStrategy(environment = environment, 
+                                      agent_spec = agent_spec, save_best_agent = False)
+#%%Start Over
+performance = strategy.run(episodes=50, evaluation=False)
+=======
 environment_out_sample = TradingEnvironment(exchange=exchange_out_sample,
                                  action_strategy=action_strategy,
                                  reward_strategy=reward_strategy,
@@ -132,6 +168,7 @@ while episode < total_episodes:
     episode = strategy_in_sample.agent.episodes
     strategy_out_sample.restore_agent(directory = 'save/temp', filename = 'temp')
 
+<<<<<<< HEAD
     trial = 0
     rewards = []
     temp_ndarray = numpy.zeros(shape = (out_sample_trials, length_out_sample -1))
@@ -152,6 +189,10 @@ while episode < total_episodes:
 
 
 in_sample_rewards = pd.Series(strategy_in_sample._runner.episode_rewards)
+=======
+in_sample_rewards = strategy_in_sample._runner.episode_rewards
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7
+>>>>>>> 08330b7897a3ef2bf6720a6216fb2bdae1032e6c
 #manually store agent
 #strategy.save_agent(directory = 'save/', filename = '01')
 
@@ -159,8 +200,15 @@ in_sample_rewards = pd.Series(strategy_in_sample._runner.episode_rewards)
 
 strategy.restore_agent(directory = 'save/', filename = 'best-model')
 performance = strategy.run(episodes=(strategy._runner.agent.episodes + 20), evaluation=False)
+<<<<<<< HEAD
 
+=======
+'''
+<<<<<<< HEAD
+=======
+>>>>>>> 08330b7897a3ef2bf6720a6216fb2bdae1032e6c
 
 performance = pd.DataFrame(data = performance.T, columns = ('balance','net_worth',
                                                             'open_amount','price'))
 
+>>>>>>> 82fe9208809cb591dac8c7c57860b42dcaf11cf7

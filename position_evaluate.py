@@ -43,7 +43,7 @@ data = pd.read_csv('Data/TA.csv',index_col = 0)
 
 data = data[data.index % 60 == 0]
 data = data.reset_index(drop = True)
-data = data.tail(2)
+data = data.tail(1000)
 
 exchange = FutureExchangePosition(data, base_instrument = 'RMB', exclude_close = True,
                           initial_balance = 100000, should_pretransform_obs = False)
