@@ -41,7 +41,7 @@ class FutureExchangePosition(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
-
+        self._observe_position = kwargs.get('observe_position', False)
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
         self._feature_pipeline = kwargs.get('feature_pipeline', None)
         self._commission_percent = kwargs.get('commission_percent', 0.3)
@@ -88,13 +88,17 @@ class FutureExchangePosition(InstrumentExchange):
         else:
             self._data_frame = data_frame
         
+        if self._observe_position:
+            self._data_frame['position'] = np.zeros(len(self._data_frame))
+        else:
+            pass
+        
         if self._should_pretransform_obs and self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(
                 self._data_frame, self.generated_space)
-            print('pipeline used')
+            print('DataFrame set: pipeline used')
         else:
-            print('pipeline unused but called')
-
+            print('DataFrame set: pipeline unused')
 
     @property
     def initial_balance(self) -> float:
@@ -132,15 +136,36 @@ class FutureExchangePosition(InstrumentExchange):
         return self._current_step < len(self._data_frame) - 1
 
     def _create_observation_generator(self) -> Generator[pd.DataFrame, None, None]:
-        for step in range(self._current_step, len(self._data_frame)):
-            self._current_step = step
+        if self._window_size == 1:
+            data = np.array(self._data_frame).T
+            for step in range(self._current_step, data.shape[1]):
+                self._current_step = step
+                obs = np.zeros(data.shape[0],dtype = 'float16')
+                for i in range(0, data.shape[0]):
+                    obs[i] = data[i][self._current_step]
+                obs = pd.DataFrame(obs).T
+                obs.columns = self._data_frame.columns
+                if not self._observe_position:
+                    pass
+                else:
+                    obs['position'] = self._portfolio.get('BTC', 0)
+                    #这个btc是默认的产品标识
+                #print(obs)
+                yield obs
             
-            obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+        else:
+            for step in range(self._current_step, len(self._data_frame)):
+                self._current_step = step
+                
+                obs = self._data_frame.iloc[step - self._window_size + 1:step + 1]
+    
+                if not self._should_pretransform_obs and self._feature_pipeline is not None:
+                    obs = self._feature_pipeline.transform(obs, self.generated_space)
 
-            if not self._should_pretransform_obs and self._feature_pipeline is not None:
-                obs = self._feature_pipeline.transform(obs, self.generated_space)
-
-            yield obs
+                if self._observe_position:
+                    raise NotImplementedError('Please implement this by the same logic as shown in windowsize == 1 ----Songhao')
+    
+                yield obs
 
         raise StopIteration
 
@@ -156,50 +181,37 @@ class FutureExchangePosition(InstrumentExchange):
             return float(self.price['close'].values[self._current_step])
     
     def _is_valid_trade(self, trade: Trade) -> bool:
+        '''
         open_amount = self._portfolio.get(trade.symbol, 0)
         if abs(open_amount * trade.price) < self.net_worth:
             return True
         else:
             print('not valid trade')
             return False
+        '''
+        return True
 
 
     def _update_account(self, trade: Trade):
-        #程序接近稳定，不需要统计trade。统计花费很多时间
-        #TODO: 还是用numpy统计吧！
-        '''
-        self._trades = self._trades.append({
-            'step': self._current_step,
-            'symbol': trade.symbol,
-            'type': trade.trade_type,
-            'amount': trade.amount,
-            'price': trade.price,
-            'volume':trade.price * trade.amount
-        }, ignore_index=True)
-        '''
-        #print(self._current_step)
+
         if trade.is_buy:
             self._balance -= trade.amount * (1.0003) * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) + trade.amount
-            #print('true buy:' + str(trade.amount))
+            #print('buy:' + str(trade.amount))
         elif trade.is_sell:
             self._balance += trade.amount * (0.9997) * trade.price
             self._portfolio[trade.symbol] = self._portfolio.get(trade.symbol, 0) - trade.amount
-            #print('true sell:' + str(trade.amount))
+            #print('sell:' + str(trade.amount))
         elif trade.is_hold:
-            #print('true hold:' + str(trade.amount))
             pass
         
-        #print('open_amount:')
-        #print(self._portfolio.get(trade.symbol,0))
-        #print('------')
-
         self._portfolio[self._base_instrument] = self._balance
         step = self._current_step
         self._performance[0][step] = self.balance
         self._performance[1][step] = self.net_worth
         self._performance[2][step] = self._portfolio.get(trade.symbol,0)
-        assert self._portfolio.get(trade.symbol,0) <= 1 and self._portfolio.get(trade.symbol,0) >= -1
+        #print(self._portfolio.get(trade.symbol,0))
+        assert self._portfolio.get(trade.symbol,0) <= 1.001 and self._portfolio.get(trade.symbol,0) >= -1.001
         self._performance[3][step] = trade.price
 
 

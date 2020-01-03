@@ -36,7 +36,7 @@ feature_pipeline = FeaturePipeline(steps=[])
 
 #%% Data Input
 from exchanges.simulated.future_exchange import FutureExchange
-data = pd.read_csv('Data/TAfun.csv',index_col = 0)
+data = pd.read_csv('Data/TA.csv',index_col = 0)
 
 data = data[data.index % 60 == 0]
 data = data.reset_index(drop = True)
@@ -45,6 +45,9 @@ length_in_sample = int(len(data) * 0.8)
 length_out_sample = len(data) - length_in_sample
 in_sample = data.head(length_in_sample)
 out_sample = data.tail(length_out_sample).reset_index(drop = True)
+
+exchange = FutureExchange(data, base_instrument = 'RMB', exclude_close = True,
+                          initial_balance = 10000, should_pretransform_obs = False)
 
 exchange_in_sample = FutureExchange(in_sample, base_instrument = 'RMB', exclude_close = True,
                           initial_balance = 10000, should_pretransform_obs = False)
@@ -75,6 +78,12 @@ agent_spec = {
     "critic_optimizer":'adam'
 }
 
+
+environment = TradingEnvironment(exchange=exchange,
+                                 action_strategy=action_strategy,
+                                 reward_strategy=reward_strategy,
+                                 feature_pipeline=feature_pipeline)
+
 environment_in_sample = TradingEnvironment(exchange=exchange_in_sample,
                                  action_strategy=action_strategy,
                                  reward_strategy=reward_strategy,
@@ -85,17 +94,26 @@ environment_out_sample = TradingEnvironment(exchange=exchange_out_sample,
                                  reward_strategy=reward_strategy,
                                  feature_pipeline=feature_pipeline)
 
+strategy = TensorforceTradingStrategy(environment = environment, 
+                                      agent_spec = agent_spec, save_best_agent = False)
+
 strategy_in_sample = TensorforceTradingStrategy(environment = environment_in_sample, 
                                       agent_spec = agent_spec, save_best_agent = False)
 
 strategy_out_sample = TensorforceTradingStrategy(environment = environment_out_sample, 
                                       agent_spec = agent_spec, save_best_agent = False)
 
-#%%Start 
-total_episodes = 100
-out_sample_start = 5
-out_sample_frequency = 20 # should be multiples of update_frequency
+
+#%% Start
+'''
+performance = strategy.run(episodes = 800, evaluation = False)
+'''
+#%%Start in|out sample 
+total_episodes = 800
+out_sample_start = 200
+out_sample_frequency = 10 # should be multiples of update_frequency
 out_sample_trials = 5
+
 
 out_sample_rewards = [] #记录每次outsample的每回合rewards
 out_sample_avrg_rewards = [] #记录每次outsample所有回合rewards平均值，判断收敛
@@ -104,28 +122,44 @@ performance = strategy_in_sample.run(episodes=out_sample_start, evaluation=False
 strategy_in_sample.save_agent(directory = 'save/temp/', filename = 'temp')
 episode = strategy_in_sample.agent.episodes
 
-while  episode < total_episodes:
+num_out_sample = 1 # 用于存储标记计数
+while episode < total_episodes:
     print('------in_sample------')
     performance = strategy_in_sample.run(episodes = (episode + out_sample_frequency), evaluation = False)
     strategy_in_sample.save_agent(directory = 'save/temp/', filename = 'temp')
 
-    #runner数据会重制嘛？等会看最后一代episode数量就好
     print('------out_sample------')
     episode = strategy_in_sample.agent.episodes
     strategy_out_sample.restore_agent(directory = 'save/temp', filename = 'temp')
-    out_sample_performance = strategy_out_sample.run(episodes=(episode + out_sample_trials), evaluation=False)
-    avrg_reward = numpy.mean(strategy_out_sample._runner.episode_rewards[-out_sample_trials:])
-    out_sample_rewards = out_sample_rewards + strategy_out_sample._runner.episode_rewards
 
-in_sample_rewards = strategy_in_sample._runner.episode_rewards
+    trial = 0
+    rewards = []
+    temp_ndarray = numpy.zeros(shape = (out_sample_trials, length_out_sample -1))
+    
+    while trial < out_sample_trials:
+        out_sample_nav = strategy_out_sample.run(episodes=(episode + trial + 1), evaluation=False)[1]
+        temp_ndarray[trial] = out_sample_nav
+        reward = strategy_out_sample._runner.episode_rewards[-1]
+        rewards.append(reward)
+        out_sample_rewards.append(reward)
+        trial += 1
+        
+    numpy.save('save/out_sample_npy/{}.npy'.format(num_out_sample),temp_ndarray)
+    num_out_sample += 1
+    
+    avrg_reward = numpy.mean(rewards)
+    out_sample_avrg_rewards.append(avrg_reward)
+
+
+in_sample_rewards = pd.Series(strategy_in_sample._runner.episode_rewards)
 #manually store agent
 #strategy.save_agent(directory = 'save/', filename = '01')
 
 #%% Restore and Continue 
-'''
+
 strategy.restore_agent(directory = 'save/', filename = 'best-model')
 performance = strategy.run(episodes=(strategy._runner.agent.episodes + 20), evaluation=False)
-'''
+
 
 performance = pd.DataFrame(data = performance.T, columns = ('balance','net_worth',
                                                             'open_amount','price'))

@@ -37,6 +37,7 @@ class FuturePositionStrategy(ActionStrategy):
             max_allowed_slippage: The maximum amount above the current price the strategy will pay for an instrument. Defaults to 1.0 (i.e. 1%).
         """
         super().__init__(action_space=Discrete(n_actions), dtype=np.int64)
+        print(n_actions)
         self.instrument_symbol = instrument_symbol
         self.max_allowed_slippage_percent = max_allowed_slippage_percent
 
@@ -57,28 +58,24 @@ class FuturePositionStrategy(ActionStrategy):
         """
         The trade type is determined by `action`, when there are only three types of trades:
         hold, buy and sell, implied by FutureTradeType.
-        ACTION is determined, by default, discrete(3), and it should only include (0,1,2) 
-        0: SHORT
-        1: NEUTRAL
-        2: LONG
+        将action转化成position和trade
         """
-        position = action - 1 # -1 short, 0 neutral, 1 long
-        change = position - self.last_position
-        #print('previous position：' + str(self.last_position))
-        #print('position after trade:' + str(position))
+        size = (self.action_space.n -1)/2
+        position = (action - size) / size
 
-        if change > 0:
+        '''
+        比如说n = 5， 生成01234五种动作，实际上对应的持仓大小应该是-1 -0.5 0 0.5 1
+        '''
+        change = position - self.last_position
+
+        if change > 0.001:
             trade_type = FutureTradeType.BUY
-            #print('buy:')
-        elif change == 0:
-            trade_type = FutureTradeType.HOLD
-            #print('hold:')
-        elif change < 0:
+        elif change < -0.001:
             trade_type = FutureTradeType.SELL
-            #print('sell:')
+        else:
+            trade_type = FutureTradeType.HOLD
 
         amount = abs(change)
-        #print(amount)
         price = self._exchange.current_price(symbol=self.instrument_symbol)
         next_price = self._exchange.next_price(symbol=self.instrument_symbol)
         self.last_position = position

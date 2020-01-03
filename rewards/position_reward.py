@@ -29,5 +29,5 @@ class PositionReward(RewardStrategy):
         elif trade.is_sell:
             self.amount -= trade.amount
         profit = (next_price-price) * self.amount - trade.amount * price * 0.0003 
-        assert self.amount <= 1 and self.amount >= -1
+        assert self.amount <= 1.001 and self.amount >= -1.001
         return profit

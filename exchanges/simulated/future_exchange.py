@@ -28,7 +28,7 @@ class FutureExchange(InstrumentExchange):
         super().__init__(base_instrument=kwargs.get('base_instrument', 'USD'),
                          dtype=kwargs.get('dtype', np.float16),
                          feature_pipeline=kwargs.get('feature_pipeline', None))
-
+        self._observe_position = kwargs.get('observe_position', False)
         self._should_pretransform_obs = kwargs.get('should_pretransform_obs', False)
         self._feature_pipeline = kwargs.get('feature_pipeline', None)
         self._commission_percent = kwargs.get('commission_percent', 0.3)
@@ -75,12 +75,17 @@ class FutureExchange(InstrumentExchange):
         else:
             self._data_frame = data_frame
         
+        if self._observe_position:
+            self._data_frame['position'] = np.zeros(len(self._data_frame))
+        else:
+            pass
+        
         if self._should_pretransform_obs and self._feature_pipeline is not None:
             self._data_frame = self._feature_pipeline.transform(
                 self._data_frame, self.generated_space)
-            print('pipeline used')
+            print('DataFrame set: pipeline used')
         else:
-            print('pipeline unused but called')
+            print('DataFrame set: pipeline unused')
 
 
     @property
@@ -107,7 +112,6 @@ class FutureExchange(InstrumentExchange):
     def generated_space(self) -> Space:
         low = np.array([0]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.min() / 10000)
         high = np.array([np.inf]*self.data_frame.shape[1],dtype = 'float16')#np.array(self.data_frame.max() * 10000)
-
         return Box(low=low, high=high, dtype='float')
 
     @property
@@ -129,7 +133,12 @@ class FutureExchange(InstrumentExchange):
                     obs[i] = data[i][self._current_step]
                 obs = pd.DataFrame(obs).T
                 obs.columns = self._data_frame.columns
-                
+                if not self._observe_position:
+                    pass
+                else:
+                    obs['position'] = self._portfolio.get('BTC', 0)
+                    #这个btc是默认的产品标识
+                #print(obs)
                 yield obs
             
         else:
@@ -140,6 +149,9 @@ class FutureExchange(InstrumentExchange):
     
                 if not self._should_pretransform_obs and self._feature_pipeline is not None:
                     obs = self._feature_pipeline.transform(obs, self.generated_space)
+
+                if self._observe_position:
+                    raise NotImplementedError('Please implement this by the same logic as shown in windowsize == 1 ----Songhao')
     
                 yield obs
 
@@ -161,7 +173,7 @@ class FutureExchange(InstrumentExchange):
         elif trade.trade_type is TradeType.MARKET_SELL or trade.trade_type is TradeType.LIMIT_SELL or trade.trade_type is FutureTradeType.SELL:
             open_amount = self._portfolio.get(trade.symbol, 0) - trade.amount
 
-        if abs(open_amount) <= 1 and abs(open_amount * trade.price) < self.net_worth:
+        if abs(open_amount) <= 1.001 and abs(open_amount * trade.price) < self.net_worth:
             return True
         else:
             self._passive_holds += 1
@@ -194,6 +206,7 @@ class FutureExchange(InstrumentExchange):
         self._performance[0][step] = self.balance
         self._performance[1][step] = self.net_worth
         self._performance[2][step] = self._portfolio.get(trade.symbol, 0)
+        #print(trade.symbol)
         self._performance[3][step] = trade.price
 
     def execute_trade(self, trade: Trade) -> Trade:
@@ -253,4 +266,3 @@ class FutureExchange(InstrumentExchange):
         # 3 = open_amount
         # 4 = price
         self._current_step = 0
-
