@@ -6,6 +6,7 @@ Tensortrade is a modulized quantitative reinforcement learning project. Accordin
 
 This readme file consists of the following parts：
 Module Overview | Running the Program | Details of Modules | Case Analysis (PPO/A2C)
+
 # Module Overview
 There are two major modules: trading environment and learning agent. Trading environment is managed by environment.TradingEnvironment, including the following sub-modules:
 1. Exchanges (state space)
@@ -20,7 +21,7 @@ Tensorforce agent is set up via tensorflow framework
 # Running the Program
 Two tutorails using sample codes/data in the project will be offered; the runner of the program is set up in strategies.tensorforce_trading_strategies.run. 
 Basically, the program iterates on every episodes, and in each episode the program iterates on every timesteps
-## inside a timestep:
+## Inside a timestep:
 1. Call agent.act: agent make action(a natural number) based on the state
 2. Call environment.execute: bringing action to the trading environment; interpreting the natural number to be a trade; generate reward for the trade (action); generate next state
 3. Call agent.observe: judging whether to update networks; recording reward; going into next timestep
