@@ -1,38 +1,26 @@
-# HTFE-tensortrade
-###
-Tensortrade program used in Huatai Securities, writer: Songhao Li
-###
-This program originated from open source project Tensortrade(see https://github.com/notadamking/tensortrade)
+# Tesortrade
+Songhao Li
+Modified from https://github.com/notadamking/tensortrade 
 
-To use the program, please install all the requirements, substitute tensortrade package with files here, and start the program in MAIN/train_and_evaluate.py
+Tensortrade is a modulized quantitative reinforcement learning project. According to my adjustment, this project has achieved self-provided data input, futures market environment configuration, and deployment of tensorforce agents.
 
-# Objective: 
-Modify the tensortrade/tensorforce to meet the needs of future market ananlysis. So that it can simulate short selling, recording transaction, and evaluating the profit reasonably.
+# Module Description
+There are two major modules: trading environment and learning agent. Trading environment is managed by environment.TradingEnvironment, including the following sub-modules:
+1. Exchanges (state space)
+2. Actions (action space)
+3. Reward 
+4. Trade (support data flow in the program)
+This four sub-moduls have been expanded with new classed to fit futures market environment; there will be specified introduction later in this document.
 
-The original tensortrade program is aquired 10/29/2019 and may not be updated to the latest version with notadamking's master branch.
+Learning agent is managed by strategies.tensorforce_trading_strategy to call and configure a tensorforce learning agent.
+Tensorforce agent is set up via tensorflow framework
 
+# Running the Program
+Two tutorails using sample codes/data in the project will be offered; the runner of the program is set up in strategies.tensorforce_trading_strategies.run. 
+Basically, the program iterates on every episodes, and in each episode the program iterates on every timesteps
+## inside a timestep:
+1. Call agent.act: agent make action(a natural number) based on the state
+2. Call environment.execute: bringing action to the trading environment; interpreting the natural number to be a trade; generate reward for the trade (action); generate next state
+3. Call agent.observe: judging whether to update networks; recording reward; going into next timestep
 
-# Modification record:
-
-Date 11/24/2019
-Position_evaluate.py
-Choose positions as actions. Check this file for more info.
--------
-Date 11/15/2019
-tensortrade_clean
-Run programs directly in this directory!
-------
-Date 11/09/2019
-0.1 amount per trad
-------
-actions/future_action_strategy.py
-
-Date: 11/2/2019
-
-------
-Ensure the program can generate buy/sell/hold actions.
-
-Date 11/22 
-
-
-
+# Details of Modules

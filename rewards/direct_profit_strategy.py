@@ -12,11 +12,7 @@ from tensortrade.trades import TradeType, Trade, FutureTradeType
 
 
 class DirectProfitStrategy(RewardStrategy):
-    '''
-    Over an episode, This reward how much profit that the strategy earns.
-    At a certain timestep, this reward = how much profit this strategy earns, based on the 
-    securities holding at the end of last timestep.
-    '''
+    '''This reward = how much money that the strategy earns'''
     def reset(self):
         """Necessary to reset the open amount and the last price"""
         self._open_amount= 0
