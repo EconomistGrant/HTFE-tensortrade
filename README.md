@@ -4,7 +4,8 @@ Modified from https://github.com/notadamking/tensortrade
 
 Tensortrade is a modulized quantitative reinforcement learning project. According to my adjustment, this project has achieved self-provided data input, futures market environment configuration, and deployment of tensorforce agents.
 
-This readme file consists of the following parts：
+This readme file consists of the following parts:
+
 Module Overview | Running the Program | Details of Modules | Case Analysis (PPO/A2C)
 
 # Module Overview
