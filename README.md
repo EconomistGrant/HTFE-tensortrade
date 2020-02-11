@@ -5,7 +5,8 @@ Modified from https://github.com/notadamking/tensortrade
 Tensortrade is a modulized quantitative reinforcement learning project. According to my adjustment, this project has achieved self-provided data input, futures market environment configuration, and deployment of tensorforce agents incluing PPO and A2C.
 
 For a preview of the learning results using PPO algorithm (https://arxiv.org/abs/1707.06347):
-
+![png1](https://github.com/EconomistGrant/HTFE-tensortrade/blob/master/Data/Picture1.png)
+![png2](https://github.com/EconomistGrant/HTFE-tensortrade/blob/master/Data/Picture2.png)
 The readme file will consist of the following parts: 
 Modules Overview  | Running the Program | Details of Modules | Case Analysis (PPO/A2C)
 
