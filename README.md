@@ -6,7 +6,7 @@ Tensortrade is a modulized quantitative reinforcement learning project. Accordin
 
 For a preview of the learning results using simple_ppo.py program in the project (PPO algorithm: https://arxiv.org/abs/1707.06347)
 
-The reward(profits) of the agent in an episode, with the initial investment $10,000. 150% profits in 1000 timesteps.
+The reward(profits) of the agent in an episode, with the initial investment $10,000. A total of 150% profits in 1000 timesteps!
 ![png1](https://github.com/EconomistGrant/HTFE-tensortrade/blob/master/Data/Picture1.png)
 
 The learning curve of the agent over episodes. After 600 episodes (trials), the rewards apparently converge.
