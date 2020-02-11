@@ -9,7 +9,7 @@ For a preview of the learning results using simple_ppo.py program in the project
 The reward(profits) of the agent in an episode, with the initial investment $10,000. 150% profits in 1000 timesteps.
 ![png1](https://github.com/EconomistGrant/HTFE-tensortrade/blob/master/Data/Picture1.png)
 
-The learning curve of the agent over episodes. After 600 trials, the rewards apparently converge.
+The learning curve of the agent over episodes. After 600 episodes (trials), the rewards apparently converge.
 ![png2](https://github.com/EconomistGrant/HTFE-tensortrade/blob/master/Data/Picture2.png)
 
 The readme file will consist of the following parts: 
