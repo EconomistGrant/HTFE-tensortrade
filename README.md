@@ -2,12 +2,13 @@
 Songhao Li
 Modified from https://github.com/notadamking/tensortrade 
 
-Tensortrade is a modulized quantitative reinforcement learning project. According to my adjustment, this project has achieved self-provided data input, futures market environment configuration, and deployment of tensorforce agents.
+Tensortrade is a modulized quantitative reinforcement learning project. According to my adjustment, this project has achieved self-provided data input, futures market environment configuration, and deployment of tensorforce agents incluing PPO and A2C.
+
+For a preview of the learning results using PPO algorithm (https://arxiv.org/abs/1707.06347):
 
 The readme file will consist of the following parts: 
 Modules Overview  | Running the Program | Details of Modules | Case Analysis (PPO/A2C)
 
-A record file will also be prepared for readers to preview some primitive results 
 # Modules Overview
 There are two major modules: trading environment and learning agent. Trading environment is managed by environment.TradingEnvironment, including the following sub-modules:
 1. Exchanges (state space)
