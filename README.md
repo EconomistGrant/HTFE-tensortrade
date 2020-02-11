@@ -109,4 +109,31 @@ Trade instances flow among different modules to pass on the specifications of tr
 
 I added an attribute, *next_price* with default value 0, so that if this attribute is unnecessary the previous programs won't recalibrate
 
-# Case analysis
+# Case Analysis: PPO(Proximal-Policy-Optimization)
+Simple_ppo.py and PPO_learn.py used PPO algorithm that is publicated in 2017 from https://arxiv.org/abs/1707.06347
+
+Both program designed good interfaces to pre-process and pass in data, calibrate hyper-parameters, save/restore agent specifications and performance visualization.
+
+The program is easy and clear to use. Here are some hints that might help you to understand and recall some basic information mentioned above.
+
+The program is composed of several blocks:
+## Environment Setup
+### Action & Rewards
+Choose and call the action and rewards modules for the program.
+
+Here DirectProfitStrategy and FutureActionStrategy should be called and used.
+
+### Feature_pipeline
+Data pre-process module that is currently unused but remained in the interface for customized calling.
+
+### Data Input(Exchanges)
+Data format: please check Data/TA.csv as an example (futures market data on PTA)
+
+### Agent Specification
+Configuration of neural network and hyperparameters
+for information on variables, please refer to the original paper of PPO
+### Environment Setup
+Merge all environment settings together by TradingEnvironment and TensorForceTradingStrategy
+
+## Start Running
+simple_PPO.py is the simplest program while PPO_learn configured in-out-sample analysis and save/load of the agent
